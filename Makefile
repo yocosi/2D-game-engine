@@ -1,0 +1,20 @@
+# Makefile variables
+CC = g++
+LANG_STD = -std=c++17
+COMPILER_FLAGS = -Wall -Wfatal-errors
+INCLUDE_PATHS = -I"./libs" -I/opt/homebrew/include/SDL2
+SRC_FILES = ./src/*.cpp \
+						./src/Game/*.cpp \
+						./src/Logger/*.cpp \
+						./src/ECS/*.cpp
+LINKER_FLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_mixer -llua5.4
+OBJ_NAME = gameengine
+
+build:
+	$(CC) $(COMPILER_FLAGS) $(LANG_STD) $(INCLUDE_PATHS) $(SRC_FILES) $(LINKER_FLAGS) -o $(OBJ_NAME)
+
+run:
+	./$(OBJ_NAME)
+
+clean:
+	rm $(OBJ_NAME)
