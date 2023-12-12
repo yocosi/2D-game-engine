@@ -2,6 +2,7 @@
 #include <SDL.h>
 #include <SDL_image.h>
 #include <glm/glm.hpp>
+#include "../ECS/ECS.h"
 
 const int FPS = 144;
 const int MILLISECS_PER_FRAME = 1000 / FPS;
@@ -13,6 +14,8 @@ private:
   int millisecsPreviousFrame = 0;
   SDL_Window *window;     // Game window
   SDL_Renderer *renderer; // Renderer who go inside the window
+
+  std::unique_ptr<Registry> registry;
 
 public:
   Game();

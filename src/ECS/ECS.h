@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <typeindex>
 #include <set>
+#include "../Logger/Logger.h"
 
 const unsigned int MAX_COMPONENTS = 32;
 
@@ -109,7 +110,7 @@ private:
   // Each pool contains all the data for a certain component type
   // [Vector index = component type id]
   // [Pool index = entity id]
-  std::vector<IPool *> componentPools;
+  std::vector<std::shared_ptr<IPool>> componentPools;
 
   // The signature lets us know which components are turned "on" for an entity
   // [index = entity id]
@@ -117,7 +118,7 @@ private:
 
   // Map of active systems
   // [index = system type id]
-  std::unordered_map<std::type_index, System *> systems;
+  std::unordered_map<std::type_index, std::shared_ptr<System>> systems;
 
   // Entities awaiting creation in the next frame (registry::update)
   std::set<Entity> entitiesToBeAdded;
@@ -126,29 +127,77 @@ private:
   std::set<Entity> entitiesToBeKilled;
 
 public:
-  Registry() = default;
+  Registry()
+  {
+    Logger::Log("Registry constructor called!");
+  };
+
+  ~Registry()
+  {
+    Logger::Log("Registry destructor called!");
+  };
 
   void Update();
 
+  // Entity management
   Entity CreateEntity();
-  void AddEntityToSystem(Entity entity);
 
+  // Component management
   // Function template to add a component of type T to a given entity
   template <typename TComponent, typename... TArgs>
   void AddComponent(Entity entity, TArgs &&...args);
-
   template <typename TComponent>
   void RemoveComponent(Entity entity);
-
   template <typename TComponent>
   bool HasComponent(Entity entity);
+
+  // System management
+  template <typename TSystem, typename... TArgs>
+  void AddSystem(TArgs &&...args);
+  template <typename TSystem>
+  void RemoveSystem();
+  template <typename TSystem>
+  bool HasSystem() const;
+  template <typename TSystem>
+  TSystem &GetSystem() const;
+  void AddEntityToSystems(Entity entity);
 };
 
+//////////////////////////////////////
+// Template function implementations//
+/////////////////////////////////////
 template <typename TComponent>
 void System::RequireComponent()
 {
   const auto componentId = Component<TComponent>::GetId();
   componentSignature.set(componentId);
+}
+
+template <typename TSystem, typename... TArgs>
+void Registry::AddSystem(TArgs &&...args)
+{
+  std::shared_ptr<TSystem> newSystem = std::make_shared<TSystem>(std::forward<TArgs>(args)...);
+  systems.insert(std::make_pair(std::type_index(typeid(TSystem)), newSystem));
+}
+
+template <typename TSystem>
+bool Registry::HasSystem() const
+{
+  return systems.find(std::type_index(typeid(TSystem))) != systems.end();
+}
+
+template <typename TSystem>
+TSystem &Registry::GetSystem() const
+{
+  auto system = systems.find(std::type_index(typeid(TSystem)));
+  return *(std::static_pointer_cast<TSystem>(system->second));
+}
+
+template <typename TSystem>
+void Registry::RemoveSystem()
+{
+  auto system = systems.find(std::type_index(typeid(TSystem)));
+  systems.erase(system);
 }
 
 template <typename TComponent, typename... TArgs>
@@ -165,12 +214,12 @@ void Registry::AddComponent(Entity entity, TArgs &&...args)
   // If the pool for this component type doesn't exist, create it
   if (!componentPools[componentId])
   {
-    Pool<TComponent> *newPool = new Pool<TComponent>();
+    std::shared_ptr<Pool<TComponent>> newPool = std::make_shared<Pool<TComponent>>();
     componentPools[componentId] = newPool;
   }
 
   // Get the pool of component values for that component type
-  Pool<TComponent> *componentPool = Pool<TComponent>(componentPools[componentId]);
+  std::shared_ptr<Pool<TComponent>> componentPool = std::static_pointer_cast<Pool<TComponent>>(componentPools[componentId]);
 
   if (entityId >= componentPool->GetSize())
   {
