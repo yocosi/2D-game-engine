@@ -3,7 +3,9 @@
         {
             "name": "Mac",
             "includePath": [
-                "${default}"
+                "${default}",
+                "${workspaceFolder}/libs",
+                "../../../../../../opt/homebrew/include/SDL2"
             ],
             "defines": [],
             "macFrameworkPath": [
