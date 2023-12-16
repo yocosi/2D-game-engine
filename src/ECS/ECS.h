@@ -13,6 +13,10 @@ const unsigned int MAX_COMPONENTS = 32;
 // and also helps keep track of which entities a system is interested in.
 typedef std::bitset<MAX_COMPONENTS> Signature;
 
+//////////////////////////////////
+// Component class declaration //
+/////////////////////////////////
+
 struct IComponent
 {
 protected:
@@ -31,6 +35,10 @@ public:
     return id;
   }
 };
+
+//////////////////////////////
+// Entity class declaration //
+//////////////////////////////
 
 class Entity
 {
@@ -65,6 +73,10 @@ public:
   class Registry *registry;
 };
 
+//////////////////////////////
+// System class declaration //
+//////////////////////////////
+
 // The system processes entities that contain a specific signature
 class System
 {
@@ -85,6 +97,10 @@ public:
   template <typename TComponent>
   void RequireComponent();
 };
+
+////////////////////////////////
+// Registry class declaration //
+////////////////////////////////
 
 // A pool is a vector of objects of type T
 class IPool
@@ -184,6 +200,7 @@ public:
 //////////////////////////////////////
 // Template function implementations//
 /////////////////////////////////////
+
 template <typename TComponent>
 void System::RequireComponent()
 {

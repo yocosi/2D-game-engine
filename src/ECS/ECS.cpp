@@ -2,10 +2,18 @@
 
 int IComponent::nextId = 0;
 
+///////////////////////////////////
+// Entity methods implementation //
+///////////////////////////////////
+
 int Entity::GetId() const
 {
   return id;
 }
+
+///////////////////////////////////
+// System methods implementation //
+///////////////////////////////////
 
 void System::AddEntityToSytem(Entity entity)
 {
@@ -33,6 +41,10 @@ const Signature &System::GetComponentSignature() const
 {
   return componentSignature;
 }
+
+/////////////////////////////////////
+// Registry methods implementation //
+/////////////////////////////////////
 
 Entity Registry::CreateEntity()
 {
